@@ -1,0 +1,21 @@
+User stories:
+  - play pictionary game with a friend
+
+Flow:
+  - system generates a word that player-A needs to draw
+  - word is visible to player-A all the time
+  - player-B sees empty canvas and blanks for that word
+  - player-B sees what player-A is drawing in real time
+  - player-B gets 3 chances to guess the word
+  - If guessed correctly, player-B gets 10 points and gets to draw
+  - If guessed incorrectly 3 times, player-A draws again
+
+Canvas features:
+  - single color line with sufficient thickness
+  - rounded edges
+  - button to clear canvas
+  - smooth drawing
+  - same aspect-ratio/size across devices
+
+Other points:
+  - displays player's role >> 'it is your turn to draw.'

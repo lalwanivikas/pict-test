@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Pictionary</title>
+  <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body>
+
+  <div class="container">
+  <canvas id="drawing-board"></canvas>
+  <div class="controls-container">
+    <div class="guess-container">
+      <input type="text" class="guess-input" placeholder="your guess">
+      <button class="btn guess-check">Go</button>
+    </div>
+    <div class="role-container">
+      4 letter word
+    </div>
+    <div class="score-container">
+      Score: <span class="score">40</span>
+    </div>
+    <button class="btn clear-canvas">Clear</button>
+  </div>
+  </div>
+
+  <!-- <script src="https://www.gstatic.com/firebasejs/3.2.1/firebase.js"></script>
+  <script>
+    // Initialize Firebase
+    var config = {
+      apiKey: "AIzaSyAPJBHjEOqP5gUBG0nKmHIhKWesGwEBSAE",
+      authDomain: "pictionary-7d08e.firebaseapp.com",
+      databaseURL: "https://pictionary-7d08e.firebaseio.com",
+      storageBucket: "pictionary-7d08e.appspot.com",
+    };
+    firebase.initializeApp(config);
+  </script> -->
+  <script type='text/javascript' src='http://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.4.0/fabric.min.js'></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
