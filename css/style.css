@@ -20,7 +20,7 @@ body {
 }
 
 #drawing-board {
-  background-color: #f1f1f1;
+  background-color: #f5f5f5;
 }
 
 .controls-container {
@@ -33,7 +33,7 @@ body {
 }
 
 .guess-input {
-  width: 15vh;
+  width: 12vh;
   padding: 4px;
   font-size: .8rem;
   font-weight: 300;
