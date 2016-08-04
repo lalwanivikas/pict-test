@@ -10,7 +10,7 @@ var clearButton = document.querySelector('.clear-canvas');
 
 // canvas dimensions
 canvas.setWidth(window.innerWidth);
-canvas.setHeight(window.innerHeight / 2);
+canvas.setHeight(window.innerHeight * .8);
 
 // game variables
 var id; // immutable
