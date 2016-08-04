@@ -1,176 +1,4 @@
-// var canvas = new fabric.Canvas('drawing-board');
-// var guessContainer = document.querySelector('.guess-container');
-// var input = document.querySelector('.guess-input');
-// var checkButton = document.querySelector('.guess-check');
-// var roleContainer = document.querySelector('.role-container');
-// var scoreContainer = document.querySelector('.score');
-// var clearButton = document.querySelector('.clear-canvas');
-
-// // testing
-// var username = "";
-// var wordList = ["a", "b", "c", "d", "e", "f"];
-// var currentWord = "a";
-// var master = "";
-// var masterState = {score: 0, canvas: ""};
-// var slave;
-// var slaveState = {score: 0, canvas: ""};
-
-
-// var canvasWidth = window.innerWidth;
-// var canvasHeight = window.innerHeight / 2;
-// setCanvas(canvasWidth, canvasHeight);
-
-// function setCanvas(width, height) {
-//   canvas.setWidth(width);
-//   canvas.setHeight(height);
-// }
-
-// clearButton.addEventListener("click", function() {
-//   canvas.clear();
-// });
-
-// function setBlankPlayingArea() {
-//   canvas.clear();
-//   input.innerHTML = "";
-//   roleContainer.innerHTML = "Hello there!"
-//   scoreContainer.innerHTML = 0;
-// }
-
-// var generateRandomWord = function() {
-//   return wordList[Math.floor(Math.random() * 6)];
-// }
-
-// function upSyncGameState(_master, _currentWord, _masterState, _slaveState) {
-//   firebase.database().ref().set({
-//     master: _master,
-//     currentWord: _currentWord,
-//     masterState: _masterState,
-//     slaveState: _slaveState
-//   });
-// };
-
-// masterUI = {
-//   settings: function() {
-//     canvas.isDrawingMode = true;
-//     canvas.freeDrawingBrush.width = 4;
-//     canvas.freeDrawingBrush.color = "#ff0000";
-
-//     guessContainer.style.display = "none";
-//     roleContainer.innerHTML = "Drawing: " + currentWord;
-//     scoreContainer.innerHTML = masterState.score;
-//   }
-// }
-
-// slaveUI = {
-//   settings: function() {
-//     canvas.isDrawingMode = false;
-
-//     guessContainer.style.display = "inline-block";
-//     roleContainer.innerHTML = currentWord.length + " letter word.";
-//     scoreContainer.innerHTML = slaveState.score;
-//   }
-// }
-
-// canvas.on("mouse:up", function(){
-//   masterState.canvas = JSON.stringify(canvas.toDatalessJSON());
-//   upSyncGameState(master, currentWord, masterState, slaveState);
-//   console.log(masterState);
-// });
-
-// // firebase.database().ref().on('value', function(snapshot) {
-// //   slaveUI.settings();
-// // });
-
-// function init() {
-
-//   setBlankPlayingArea();
-
-//   username = username || prompt("Please enter your name", "Batman");
-
-//   firebase.database().ref().once('value').then(function(snapshot) {
-//     if(snapshot.val() === null) {
-//       master = username;
-//       currentWord = generateRandomWord();
-//       masterState = {score: 0, canvas: ""};
-//       slaveState = {score: 0, canvas: ""};
-//       upSyncGameState(master, currentWord, masterState, slaveState);
-//       masterUI.settings();
-//     } else {
-//       master = snapshot.val().master;
-//       currentWord = snapshot.val().currentWord;
-//       masterState = snapshot.val().masterState;
-//       slaveState = snapshot.val().slaveState;
-//       if (master.toLowerCase() === username.toLowerCase()) {
-//         masterUI.settings();
-//       } else {
-//         slaveUI.settings();
-//       }
-//     }
-//   });
-
-// }
-
-// window.onload = init;
-
-/*
-
-window onload
-  >> decide who is player A and who is B
-  >> set canvas dimension based on player-A's phone size
-  >> get current canvas state from Firebase and draw it
-  >> get current word and draw blanks for it (or text input with label as "4 letter word")
-  >> get current score and display it
-
-new game
-  >> clear canvas for both players
-  >> generate new random word - word visible to player-A and corresponding blanks visible to player-B
-  >> update score
-
-on canvas change
-  >> sync the changes to Firebase
-
-on word guess
-  >> input the word in the blank
-  >> on pressing check - checks if the word is correct or not
-
-Global state:
-  >> master: true or false
-  >> word
-
-game states (separate states for both players)
-  >> score
-  >> canvas state
-  >> current word
-  >> current role: drawing or guessing
-  >> # of chances left if guessing role
-
-Freehand drawing
-  >> var canvas = new fabric.Canvas('sheet');
-  >> canvas.isDrawingMode = true;
-  >> canvas.freeDrawingBrush.width = 4;
-  >> canvas.freeDrawingBrush.color = "#ff0000";
-
-DB Structure
-{
-  isAOnline: true,
-  isBOnline: true,
-  master: "playerA",
-  playerA: {
-    id: "playerA",
-    role: "master",
-    score: 0,
-    canvas: ""
-  }
-  playerB: {
-    id: "playerB",
-    role: "slave",
-    score: 0,
-    canvas: ""
-  }
-}
-
-*/
-
+// dom selectors
 var canvasContainer = document.querySelector('.canvas-container');
 var canvas = new fabric.Canvas('drawing-board');
 var guessContainer = document.querySelector('.guess-container');
@@ -180,13 +8,14 @@ var roleContainer = document.querySelector('.role-container');
 var scoreContainer = document.querySelector('.score');
 var clearButton = document.querySelector('.clear-canvas');
 
-
-var id;
-var currentWord;
-var wordList = ["tree", "car", "laptop", "table", "cloud", "spectacle"];
-
+// canvas dimensions
 canvas.setWidth(window.innerWidth);
 canvas.setHeight(window.innerHeight / 2);
+
+// game variables
+var id; // immutable
+var wordList = ["car", "tree", "laptop", "table", "cloud", "spectacle", "football"];
+var chancesLeft = 3;
 
 var emptyState = {
   isAOnline: false,
@@ -226,70 +55,103 @@ var gameState = {
   }
 }
 
-clearButton.addEventListener("click", function() {
-  canvas.clear();
-});
+// clear canvas using click button
+clearButton.addEventListener("click", function() {canvas.clear();});
+
+// returns a random word
+function generateRandomWord() {return wordList[Math.floor(Math.random() * wordList.length)];}
 
 canvas.on("mouse:up", function(){
   if (gameState.master === id) {
     gameState[id]["canvasString"] = JSON.stringify(canvas.toDatalessJSON());
-    firebase.database().ref().set(gameState);
+    upSync();
   }
 });
 
 checkButton.addEventListener("click", function() {
-  if (input.value.toLowerCase() === currentWord) {
-    alert("Correct answer. Now it is your turn to draw.");
-  }
-})
 
-var generateRandomWord = function() {
-  return wordList[Math.floor(Math.random() * 6)];
-}
+  if (input.value.toLowerCase() === gameState.currentWord) {
+
+    chancesLeft = 3;
+    alert("Correct answer. Now it is your turn to draw.");
+    canvas.clear();
+
+    gameState.master = id;
+    gameState.currentWord = generateRandomWord();
+    gameState[id].role = "master";
+    var slave = (id === "playerA") ? "playerB" : "playerA";
+    gameState[slave].role = "slave"
+    upSync();
+  } else {
+    chancesLeft--;
+    alert("Incorrect answer. Chances left: " + chancesLeft + ".");
+  }
+
+  if (chancesLeft === 0) {
+
+    chancesLeft = 3;
+    alert("No more chances left. Now it's your turn to draw.");
+    canvas.clear();
+
+    gameState.master = id;
+    gameState.currentWord = generateRandomWord();
+    gameState[id].role = "master";
+    var slave = (id === "playerA") ? "playerB" : "playerA";
+    gameState[slave].role = "slave"
+    upSync();
+
+    return;
+  }
+
+});
 
 function updateMasterUI() {
+  if (gameState[id].role === "master") {
+    // console.log("I am master!");
+    canvasContainer.style.pointerEvents = "auto";
+    canvas.isDrawingMode = true;
+    canvas.freeDrawingBrush.width = 4;
+    canvas.freeDrawingBrush.color = "#4d85fc";
 
-  console.log("I am master!");
-
-  canvas.isDrawingMode = true;
-  canvas.freeDrawingBrush.width = 4;
-  canvas.freeDrawingBrush.color = "#ff0000";
-
-  guessContainer.style.display = "none";
-  roleContainer.innerHTML = "Drawing: " + currentWord;
-
-}
-
-function updateSlaveUI(snapshot) {
-
-  console.log("I am slave!");
-
-  if (snapshot.val() !== null) {
-    if (snapshot.val()[id]["role"] == "slave") {
-
-      var master = snapshot.val()["master"];
-      canvasContainer.style.pointerEvents = "none";
-      canvas.loadFromJSON(snapshot.val()[master].canvasString);
-      canvas.isDrawingMode = false;
-      canvas.selection = false;
-      canvas.renderAll();
-
-      guessContainer.style.display = "inline-block";
-      roleContainer.innerHTML = currentWord.length + " letter word."
-
-    }
-  }
-
-}
-
-function updateUI(role) {
-  if (role === "master") {
-    updateMasterUI()
+    guessContainer.style.display = "none";
+    roleContainer.innerHTML = "Drawing: " + gameState.currentWord;
   }
 }
+
+function updateSlaveUI() {
+  if (gameState[id].role === "slave") {
+    // console.log("I am slave!");
+    // var master = (gameState[id] === "playerA") ? "playerB" : "playerA";
+    var currentMaster = gameState.master;
+    canvasContainer.style.pointerEvents = "none";
+    canvas.loadFromJSON(gameState[currentMaster].canvasString);
+    canvas.isDrawingMode = false;
+    canvas.selection = false;
+    canvas.renderAll();
+
+    guessContainer.style.display = "inline-block";
+    roleContainer.innerHTML = gameState.currentWord.length + " letter word."
+  }
+}
+
+function updateUI() {
+  if (gameState[id].role === "master") {
+    // console.log("updating master");
+    updateMasterUI();
+  } else if (gameState[id].role === "slave") {
+    // console.log("updating slave");
+    updateSlaveUI();
+  }
+}
+
+// not being used currently - need to improve code using this function
+function upSync() {firebase.database().ref().set(gameState);}
 
 firebase.database().ref().on('value', function(snapshot) {
-  updateSlaveUI(snapshot);
+  if (snapshot.val() !== null) {
+    gameState = snapshot.val();
+    updateUI();
+  }
 });
 
 function init() {
@@ -297,44 +159,49 @@ function init() {
     if (snapshot.val() === null) {
       gameState = emptyState;
       gameState.isAOnline = true;
-      currentWord = generateRandomWord();
-      gameState.currentWord = currentWord;
+      gameState.currentWord = generateRandomWord();
       id = "playerA";
-      console.log(1);
-      alert("you are " + id);
+      alert("It is your turn to draw.");
+      // console.log(1);
+      // alert("you are " + id);
     } else {
       gameState = snapshot.val();
-      if (!snapshot.val().isAOnline && !snapshot.val().isBOnline) {
+      // both players offline
+      if (!gameState.isAOnline && !gameState.isBOnline) {
         gameState = emptyState;
         gameState.isAOnline = true;
-        currentWord = generateRandomWord();
-        gameState.currentWord = currentWord;
+        gameState.currentWord = generateRandomWord();
         id = "playerA";
-        alert("you are " + id);
-        console.log(2);
-      } else if (!snapshot.val().isAOnline && snapshot.val().isBOnline) {
-        gameState = snapshot.val();
+        alert("It is your turn to draw.");
+        // alert("you are " + id);
+        // console.log(2);
+      } else if (!gameState.isAOnline && gameState.isBOnline) {
+        // player-a offline and player-b online
+        // gameState = snapshot.val();
         gameState.isAOnline = true;
-        currentWord = generateRandomWord();
-        gameState.currentWord = currentWord;
+        gameState.currentWord = generateRandomWord();
         id = "playerA";
-        alert("you are " + id);
-        console.log(3);
-      } else if(snapshot.val().isAOnline && !snapshot.val().isBOnline) {
-        gameState = snapshot.val();
+        alert("It is your turn to draw.");
+        // alert("you are " + id);
+        // console.log(3);
+      } else if(gameState.isAOnline && !gameState.isBOnline) {
+        // player-a online and player-b offline
+        // gameState = snapshot.val();
         gameState.isBOnline = true;
-        currentWord = snapshot.val().currentWord;
+        currentWord = gameState.currentWord;
         id = "playerB";
-        alert("you are " + id);
-        console.log(4);
+        alert("It is your turn to guess.");
+        // alert("you are " + id);
+        // console.log(4);
       } else {
-        alert("game in progress. please try later");
+        alert("Game in progress. Please try later.");
         document.write("game in progress. please try later");
         return;
       }
     }
-    firebase.database().ref().set(gameState);
-    updateUI(gameState[id]["role"]);
+    // console.log(gameState[id]["role"]);
+    updateUI();
+    upSync();
   });
 }
 
