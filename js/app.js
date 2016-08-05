@@ -14,7 +14,7 @@ canvas.setHeight(window.innerHeight * .8);
 
 // game variables
 var id; // immutable
-var wordList = ["car", "tree", "laptop", "table", "cloud", "spectacle", "football"];
+var wordList = ["car", "tree", "laptop", "table", "cloud", "spectacle", "football", "bottle", "television", "chair", "bat", "cap", "door", "octopus", "shoe", "balloon", "apple", "cat", "train", "whale", "duck", "shirt", "circus", "treasure", "cake", "skate", "teapot"];
 var chancesLeft = 3;
 
 var emptyState = {
@@ -56,7 +56,13 @@ var gameState = {
 }
 
 // clear canvas using click button
-clearButton.addEventListener("click", function() {canvas.clear();});
+clearButton.addEventListener("click", function() {
+  canvas.clear();
+  if (gameState.master === id) {
+    gameState[id]["canvasString"] = JSON.stringify(canvas.toDatalessJSON());
+    upSync();
+  }
+});
 
 // returns a random word
 function generateRandomWord() {return wordList[Math.floor(Math.random() * wordList.length)];}
@@ -68,7 +74,15 @@ canvas.on("mouse:up", function(){
   }
 });
 
-checkButton.addEventListener("click", function() {
+checkButton.addEventListener("click", checkStatus);
+
+input.addEventListener("keyup", function(e) {
+  if (e.keyCode === 13) {
+    checkStatus();
+  }
+});
+
+function checkStatus() {
 
   if (input.value.toLowerCase() === gameState.currentWord) {
 
@@ -90,7 +104,7 @@ checkButton.addEventListener("click", function() {
   if (chancesLeft === 0) {
 
     chancesLeft = 3;
-    alert("No more chances left. Now it's your turn to draw.");
+    alert("No more chances left. Now it's your turn to draw. Correct answer was '" + gameState.currentWord + "'. Good luck.");
     canvas.clear();
 
     gameState.master = id;
@@ -103,7 +117,7 @@ checkButton.addEventListener("click", function() {
     return;
   }
 
-});
+}
 
 function updateMasterUI() {
   if (gameState[id].role === "master") {
@@ -115,6 +129,7 @@ function updateMasterUI() {
 
     guessContainer.style.display = "none";
     roleContainer.innerHTML = "Drawing: " + gameState.currentWord;
+    clearButton.style.display = "inline";
   }
 }
 
@@ -131,6 +146,7 @@ function updateSlaveUI() {
 
     guessContainer.style.display = "inline-block";
     roleContainer.innerHTML = gameState.currentWord.length + " letter word."
+    clearButton.style.display = "none";
   }
 }
 
